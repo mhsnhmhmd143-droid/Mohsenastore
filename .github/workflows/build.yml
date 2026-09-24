@@ -1,0 +1,47 @@
+name: Build Mohsina Store APK
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: تحميل المشروع
+        uses: actions/checkout@v4
+
+      - name: فك ضغط المشروع
+        run: |
+          unzip -o MohsinaStoreAndroid_Project.zip
+          cd MohsinaStoreAndroid
+          echo "PROJECT_DIR=$PWD" >> $GITHUB_ENV
+
+      - name: إعداد Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: إعداد Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: تثبيت Android SDK
+        run: |
+          sdkmanager "platforms;android-35" "build-tools;35.0.0"
+
+      - name: إعداد Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+
+      - name: بناء التطبيق
+        run: |
+          cd "$PROJECT_DIR"
+          gradle assembleDebug --no-daemon
+
+      - name: حفظ ملف APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Mohsina-Store-APK
+          path: MohsinaStoreAndroid/app/build/outputs/apk/debug/app-debug.apk
